@@ -136,9 +136,22 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                   lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
                 );
                 if (date != null) {
-                  setState(() {
-                    _dueDate = date;
-                  });
+                  if (!mounted) return;
+                  final time = await showTimePicker(
+                    context: context,
+                    initialTime: TimeOfDay.fromDateTime(_dueDate ?? DateTime.now()),
+                  );
+                  if (time != null) {
+                    setState(() {
+                      _dueDate = DateTime(
+                        date.year,
+                        date.month,
+                        date.day,
+                        time.hour,
+                        time.minute,
+                      );
+                    });
+                  }
                 }
               },
               child: Container(
@@ -152,8 +165,8 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                   children: [
                     Text(
                       _dueDate != null
-                          ? DateFormat('MMM d, yyyy').format(_dueDate!)
-                          : 'Select a date',
+                          ? DateFormat('MMM d, yyyy - HH:mm').format(_dueDate!)
+                          : 'Select a date and time',
                       style: GoogleFonts.inter(
                         color: _dueDate != null ? Colors.black : Colors.grey[500],
                         fontSize: 16,

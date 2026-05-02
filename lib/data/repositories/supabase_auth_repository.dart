@@ -12,8 +12,12 @@ class SupabaseAuthRepository implements UserRepository {
   }
 
   @override
-  Future<void> signUp(String email, String password) async {
-    await _supabase.auth.signUp(email: email, password: password);
+  Future<void> signUp(String email, String password, {String? name}) async {
+    await _supabase.auth.signUp(
+      email: email,
+      password: password,
+      data: name != null && name.isNotEmpty ? {'full_name': name} : null,
+    );
   }
 
   @override

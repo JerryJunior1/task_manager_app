@@ -1,5 +1,6 @@
 import 'package:equatable/equatable.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import '../../../core/services/notification_service.dart';
 import '../../../domain/entities/task.dart';
 import '../../../domain/repositories/task_repository.dart';
 
@@ -59,11 +60,15 @@ class TaskError extends TaskState {
 class TaskBloc extends Bloc<TaskEvent, TaskState> {
   final TaskRepository taskRepository;
 
-  TaskBloc({required this.taskRepository}) : super(TaskInitial()) {
+  TaskBloc({required this.taskRepository}) : super(TaskLoading()) {
     on<LoadTasks>((event, emit) async {
       emit(TaskLoading());
       try {
         final tasks = await taskRepository.getTasks();
+        // Re-schedule notifications in case they were cleared by the system
+        for (var task in tasks) {
+          NotificationService().scheduleTaskReminder(task);
+        }
         emit(TaskLoaded(tasks));
       } catch (e) {
         emit(TaskError(e.toString()));
@@ -77,6 +82,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         try {
           final newTask = await taskRepository.addTask(event.task);
           currentTasks.add(newTask);
+          NotificationService().scheduleTaskReminder(newTask);
           emit(TaskLoaded(currentTasks));
         } catch (e) {
           emit(TaskError(e.toString()));
@@ -94,6 +100,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
           if (index != -1) {
             currentTasks[index] = updatedTask;
           }
+          NotificationService().scheduleTaskReminder(updatedTask);
           emit(TaskLoaded(currentTasks));
         } catch (e) {
           emit(TaskError(e.toString()));
@@ -108,6 +115,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         try {
           await taskRepository.deleteTask(event.taskId);
           currentTasks.removeWhere((t) => t.id == event.taskId);
+          NotificationService().cancelReminder(event.taskId);
           emit(TaskLoaded(currentTasks));
         } catch (e) {
           emit(TaskError(e.toString()));

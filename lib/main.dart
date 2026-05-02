@@ -3,12 +3,13 @@ import 'package:supabase_flutter/supabase_flutter.dart' hide AuthState;
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:google_fonts/google_fonts.dart';
 
+import 'core/services/notification_service.dart';
 import 'data/repositories/supabase_auth_repository.dart';
 import 'data/repositories/supabase_task_repository.dart';
 import 'presentation/blocs/auth/auth_bloc.dart';
 import 'presentation/blocs/task/task_bloc.dart';
-import 'presentation/screens/login_screen.dart';
 import 'presentation/screens/home_screen.dart';
+import 'presentation/screens/login_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,6 +18,9 @@ void main() async {
     url: 'https://ihpywdwzqynfyxmshrbb.supabase.co',
     anonKey: 'sb_publishable_JXQ4-6FZNUC20GfYpvAmaQ_a6GqJKb8',
   );
+
+  final notificationService = NotificationService();
+  await notificationService.init();
 
   runApp(const MyApp());
 }
@@ -71,6 +75,16 @@ class MyApp extends StatelessWidget {
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
           ),
         ),
+        builder: (context, child) {
+          return Container(
+            color: Colors.grey[200],
+            alignment: Alignment.center,
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 800),
+              child: child!,
+            ),
+          );
+        },
         home: const AuthWrapper(),
       ),
     );

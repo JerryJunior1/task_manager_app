@@ -20,9 +20,10 @@ class SignInRequested extends AuthEvent {
 class SignUpRequested extends AuthEvent {
   final String email;
   final String password;
-  const SignUpRequested(this.email, this.password);
+  final String name;
+  const SignUpRequested(this.email, this.password, {this.name = ''});
   @override
-  List<Object?> get props => [email, password];
+  List<Object?> get props => [email, password, name];
 }
 
 class SignOutRequested extends AuthEvent {}
@@ -80,7 +81,7 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
     on<SignUpRequested>((event, emit) async {
       emit(AuthLoading());
       try {
-        await userRepository.signUp(event.email, event.password);
+        await userRepository.signUp(event.email, event.password, name: event.name);
         // If the user is not automatically logged in, it means email confirmation is required.
         if (userRepository.currentUserEmail == null) {
           emit(AuthError('Account created! Please check your email to verify.'));
