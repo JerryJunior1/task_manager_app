@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:intl/intl.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
@@ -63,13 +64,27 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
   Widget build(BuildContext context) {
     final isEditing = widget.task != null;
     return Scaffold(
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        title: Text(isEditing ? 'Edit Task' : 'New Task'),
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.close, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: true,
+        title: Text(
+          isEditing ? 'Edit Task' : 'New Task',
+          style: GoogleFonts.inter(
+            color: Colors.black,
+            fontWeight: FontWeight.w800,
+            fontSize: 18,
+          ),
+        ),
         actions: [
           if (isEditing)
             IconButton(
-              icon: const Icon(Icons.delete_outline),
-              color: Colors.red,
+              icon: const Icon(Icons.delete_outline, color: Colors.red),
               onPressed: () {
                 context.read<TaskBloc>().add(DeleteTaskEvent(widget.task!.id));
                 Navigator.pop(context);
@@ -77,33 +92,42 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
             ),
         ],
       ),
-      body: SingleChildScrollView(
+      body: Padding(
         padding: const EdgeInsets.all(24.0),
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
+            Text(
+              'Task Title',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
             TextField(
               controller: _titleController,
               decoration: const InputDecoration(
-                labelText: 'Task Title',
+                hintText: 'e.g., Prepare Q3 Financial Report',
               ),
             ),
             const SizedBox(height: 24),
+            Text(
+              'Description',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
             TextField(
               controller: _descriptionController,
               decoration: const InputDecoration(
-                labelText: 'Description (Optional)',
+                hintText: 'Add detailed notes, steps, or requirements here...',
               ),
-              maxLines: 3,
+              maxLines: 4,
             ),
             const SizedBox(height: 24),
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              title: const Text('Due Date'),
-              subtitle: Text(
-                _dueDate != null ? DateFormat('MMM d, yyyy').format(_dueDate!) : 'Not set',
-              ),
-              trailing: const Icon(Icons.calendar_today),
+            Text(
+              'Due Date',
+              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+            ),
+            const SizedBox(height: 8),
+            GestureDetector(
               onTap: () async {
                 final date = await showDatePicker(
                   context: context,
@@ -117,11 +141,40 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                   });
                 }
               },
+              child: Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFF1F0FF),
+                  borderRadius: BorderRadius.circular(16),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      _dueDate != null
+                          ? DateFormat('MMM d, yyyy').format(_dueDate!)
+                          : 'Select a date',
+                      style: GoogleFonts.inter(
+                        color: _dueDate != null ? Colors.black : Colors.grey[500],
+                        fontSize: 16,
+                      ),
+                    ),
+                    const Icon(Icons.calendar_today_outlined, size: 20, color: Colors.black54),
+                  ],
+                ),
+              ),
             ),
-            const SizedBox(height: 48),
+            const Spacer(),
             ElevatedButton(
               onPressed: _saveTask,
-              child: const Text('Save Task'),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: const [
+                  Icon(Icons.check, size: 20),
+                  SizedBox(width: 8),
+                  Text('Save Task'),
+                ],
+              ),
             ),
           ],
         ),

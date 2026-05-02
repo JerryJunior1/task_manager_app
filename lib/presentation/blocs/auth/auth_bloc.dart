@@ -67,7 +67,13 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       try {
         await userRepository.signIn(event.email, event.password);
       } catch (e) {
-        emit(AuthError(e.toString()));
+        String errorMsg = e.toString();
+        if (errorMsg.contains('AuthException')) {
+          try {
+            errorMsg = errorMsg.split('message: ')[1].split(',')[0];
+          } catch (_) {}
+        }
+        emit(AuthError(errorMsg));
       }
     });
 
@@ -75,8 +81,17 @@ class AuthBloc extends Bloc<AuthEvent, AuthState> {
       emit(AuthLoading());
       try {
         await userRepository.signUp(event.email, event.password);
+        // If the user is not automatically logged in, it means email confirmation is required.
+        if (userRepository.currentUserEmail == null) {
+          emit(AuthError('Account created! Please check your email to verify.'));
+        }
       } catch (e) {
-        emit(AuthError(e.toString()));
+        // Supabase throws AuthException, e.toString() contains the message
+        String errorMsg = e.toString();
+        if (errorMsg.contains('AuthException')) {
+          errorMsg = errorMsg.split('message: ')[1].split(',')[0];
+        }
+        emit(AuthError(errorMsg));
       }
     });
 
