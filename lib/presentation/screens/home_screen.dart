@@ -22,6 +22,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String _filter = 'All';
   Timer? _reminderTimer;
   final Set<String> _notifiedTaskIds = {};
+  final Set<String> _selectedTaskIds = {};
 
   @override
   void initState() {
@@ -87,42 +88,94 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _deleteSelectedTasks() {
+    for (String id in _selectedTaskIds) {
+      context.read<TaskBloc>().add(DeleteTaskEvent(id));
+    }
+    setState(() {
+      _selectedTaskIds.clear();
+    });
+  }
+
   @override
   Widget build(BuildContext context) {
     final user = Supabase.instance.client.auth.currentUser;
     final fullName = user?.userMetadata?['full_name'] as String?;
     final firstName = fullName != null && fullName.isNotEmpty ? fullName.split(' ')[0] : 'User';
+    final isSelectionMode = _selectedTaskIds.isNotEmpty;
 
     return Scaffold(
       backgroundColor: const Color(0xFFF8F9FE),
-      appBar: AppBar(
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        centerTitle: true,
-        title: Text(
-          'TaskFlow',
-          style: GoogleFonts.inter(
-            color: const Color(0xFF5D46D1),
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
-          ),
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.notifications_outlined, color: Color(0xFF5D46D1)),
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Aucune nouvelle alerte', style: GoogleFonts.inter()),
-                  behavior: SnackBarBehavior.floating,
-                  backgroundColor: Colors.black87,
+      appBar: isSelectionMode
+          ? AppBar(
+              backgroundColor: const Color(0xFF5D46D1),
+              elevation: 0,
+              leading: IconButton(
+                icon: const Icon(Icons.close, color: Colors.white),
+                onPressed: () => setState(() => _selectedTaskIds.clear()),
+              ),
+              title: Text(
+                '${_selectedTaskIds.length} sélectionnés',
+                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.delete, color: Colors.white),
+                  onPressed: () {
+                    showDialog(
+                      context: context,
+                      builder: (BuildContext context) {
+                        return AlertDialog(
+                          title: Text('Supprimer', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+                          content: Text('Voulez-vous vraiment supprimer ces ${_selectedTaskIds.length} tâches ?'),
+                          actions: [
+                            TextButton(
+                              onPressed: () => Navigator.pop(context),
+                              child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
+                            ),
+                            TextButton(
+                              onPressed: () {
+                                _deleteSelectedTasks();
+                                Navigator.pop(context);
+                              },
+                              child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+                            ),
+                          ],
+                        );
+                      },
+                    );
+                  },
                 ),
-              );
-            },
-          ),
-          const SizedBox(width: 8),
-        ],
-      ),
+              ],
+            )
+          : AppBar(
+              backgroundColor: Colors.transparent,
+              elevation: 0,
+              centerTitle: true,
+              title: Text(
+                'TaskFlow',
+                style: GoogleFonts.inter(
+                  color: const Color(0xFF5D46D1),
+                  fontWeight: FontWeight.w800,
+                  fontSize: 18,
+                ),
+              ),
+              actions: [
+                IconButton(
+                  icon: const Icon(Icons.notifications_outlined, color: Color(0xFF5D46D1)),
+                  onPressed: () {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Aucune nouvelle alerte', style: GoogleFonts.inter()),
+                        behavior: SnackBarBehavior.floating,
+                        backgroundColor: Colors.black87,
+                      ),
+                    );
+                  },
+                ),
+                const SizedBox(width: 8),
+              ],
+            ),
       body: BlocBuilder<TaskBloc, TaskState>(
         builder: (context, state) {
           return Padding(
@@ -197,7 +250,21 @@ class _HomeScreenState extends State<HomeScreen> {
                                   itemCount: filteredTasks.length,
                                   itemBuilder: (context, index) {
                                     final task = filteredTasks[index];
-                                    return TaskCard(task: task);
+                                    final isSelected = _selectedTaskIds.contains(task.id);
+                                    return TaskCard(
+                                      task: task,
+                                      isSelected: isSelected,
+                                      isSelectionMode: isSelectionMode,
+                                      onToggleSelection: () {
+                                        setState(() {
+                                          if (isSelected) {
+                                            _selectedTaskIds.remove(task.id);
+                                          } else {
+                                            _selectedTaskIds.add(task.id);
+                                          }
+                                        });
+                                      },
+                                    );
                                   },
                                 );
                               },
@@ -279,157 +346,158 @@ class _FilterChip extends StatelessWidget {
 
 class TaskCard extends StatelessWidget {
   final Task task;
+  final bool isSelected;
+  final bool isSelectionMode;
+  final VoidCallback onToggleSelection;
 
-  const TaskCard({super.key, required this.task});
+  const TaskCard({
+    super.key, 
+    required this.task,
+    required this.isSelected,
+    required this.isSelectionMode,
+    required this.onToggleSelection,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 16),
-      padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withOpacity(0.02),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
-      child: Row(
-        children: [
-          GestureDetector(
-            onTap: () {
-              context.read<TaskBloc>().add(UpdateTaskEvent(task.copyWith(isDone: !task.isDone)));
-            },
-            child: Container(
-              width: 24,
-              height: 24,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: task.isDone ? const Color(0xFF4CAF50) : Colors.transparent,
-                border: Border.all(
-                  color: task.isDone ? const Color(0xFF4CAF50) : Colors.grey.shade400,
-                  width: 2,
-                ),
+    return GestureDetector(
+      onLongPress: onToggleSelection,
+      onTap: () {
+        if (isSelectionMode) {
+          onToggleSelection();
+        } else {
+          showDialog(
+            context: context,
+            builder: (_) => AlertDialog(
+              backgroundColor: Colors.white,
+              title: Text(task.title, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+              content: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  if (task.description != null && task.description!.isNotEmpty) ...[
+                    Text('Description', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(task.description!, style: GoogleFonts.inter(color: Colors.grey[700])),
+                    const SizedBox(height: 16),
+                  ],
+                  if (task.dueDate != null) ...[
+                    Text('Due Date', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                    const SizedBox(height: 4),
+                    Text(DateFormat('MMM d, yyyy - h:mm a').format(task.dueDate!), style: GoogleFonts.inter(color: Colors.grey[700])),
+                    const SizedBox(height: 16),
+                  ],
+                  Text('Status', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                  const SizedBox(height: 4),
+                  Text(task.isDone ? 'Completed' : 'Pending', style: GoogleFonts.inter(color: task.isDone ? Colors.green : Colors.orange)),
+                ],
               ),
-              child: task.isDone
-                  ? const Icon(Icons.check, size: 16, color: Colors.white)
-                  : null,
-            ),
-          ),
-          const SizedBox(width: 16),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  task.title,
-                  style: GoogleFonts.inter(
-                    fontWeight: FontWeight.w700,
-                    fontSize: 16,
-                    decoration: task.isDone ? TextDecoration.lineThrough : null,
-                    color: task.isDone ? Colors.grey : const Color(0xFF1A1A1A),
-                  ),
+              actions: [
+                TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: Text('Close', style: GoogleFonts.inter(color: const Color(0xFF5D46D1))),
                 ),
-                if (task.dueDate != null)
-                  Padding(
-                    padding: const EdgeInsets.only(top: 4.0),
-                    child: Text(
-                      'Due ${DateFormat('MMM d, h:mm a').format(task.dueDate!)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 13,
-                        color: Colors.grey[600],
-                      ),
-                    ),
-                  ),
               ],
             ),
-          ),
-          Row(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              IconButton(
-                icon: const Icon(Icons.visibility_outlined, color: Colors.grey, size: 20),
-                onPressed: () {
-                  showDialog(
-                    context: context,
-                    builder: (_) => AlertDialog(
-                      backgroundColor: Colors.white,
-                      title: Text(task.title, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-                      content: Column(
-                        mainAxisSize: MainAxisSize.min,
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          if (task.description != null && task.description!.isNotEmpty) ...[
-                            Text('Description', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
-                            const SizedBox(height: 4),
-                            Text(task.description!, style: GoogleFonts.inter(color: Colors.grey[700])),
-                            const SizedBox(height: 16),
-                          ],
-                          if (task.dueDate != null) ...[
-                            Text('Due Date', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
-                            const SizedBox(height: 4),
-                            Text(DateFormat('MMM d, yyyy - h:mm a').format(task.dueDate!), style: GoogleFonts.inter(color: Colors.grey[700])),
-                            const SizedBox(height: 16),
-                          ],
-                          Text('Status', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
-                          const SizedBox(height: 4),
-                          Text(task.isDone ? 'Completed' : 'Pending', style: GoogleFonts.inter(color: task.isDone ? Colors.green : Colors.orange)),
-                        ],
-                      ),
-                      actions: [
-                        TextButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text('Close', style: GoogleFonts.inter(color: const Color(0xFF5D46D1))),
-                        ),
-                      ],
+          );
+        }
+      },
+      child: Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.all(20),
+        decoration: BoxDecoration(
+          color: isSelected ? const Color(0xFF5D46D1).withOpacity(0.1) : Colors.white,
+          borderRadius: BorderRadius.circular(20),
+          border: isSelected ? Border.all(color: const Color(0xFF5D46D1), width: 2) : Border.all(color: Colors.transparent, width: 2),
+          boxShadow: [
+            BoxShadow(
+              color: Colors.black.withOpacity(0.02),
+              blurRadius: 10,
+              offset: const Offset(0, 4),
+            ),
+          ],
+        ),
+        child: Row(
+          children: [
+            if (isSelectionMode)
+              Container(
+                margin: const EdgeInsets.only(right: 16),
+                width: 24,
+                height: 24,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: isSelected ? const Color(0xFF5D46D1) : Colors.transparent,
+                  border: Border.all(
+                    color: isSelected ? const Color(0xFF5D46D1) : Colors.grey.shade400,
+                    width: 2,
+                  ),
+                ),
+                child: isSelected ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+              )
+            else
+              GestureDetector(
+                onTap: () {
+                  context.read<TaskBloc>().add(UpdateTaskEvent(task.copyWith(isDone: !task.isDone)));
+                },
+                child: Container(
+                  margin: const EdgeInsets.only(right: 16),
+                  width: 24,
+                  height: 24,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    color: task.isDone ? const Color(0xFF4CAF50) : Colors.transparent,
+                    border: Border.all(
+                      color: task.isDone ? const Color(0xFF4CAF50) : Colors.grey.shade400,
+                      width: 2,
                     ),
-                  );
-                },
+                  ),
+                  child: task.isDone ? const Icon(Icons.check, size: 16, color: Colors.white) : null,
+                ),
               ),
-              IconButton(
-                icon: const Icon(Icons.edit_outlined, color: Colors.grey, size: 20),
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(builder: (_) => AddEditTaskScreen(task: task)),
-                  );
-                },
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    task.title,
+                    style: GoogleFonts.inter(
+                      fontWeight: FontWeight.w700,
+                      fontSize: 16,
+                      decoration: task.isDone ? TextDecoration.lineThrough : null,
+                      color: task.isDone ? Colors.grey : const Color(0xFF1A1A1A),
+                    ),
+                  ),
+                  if (task.dueDate != null)
+                    Padding(
+                      padding: const EdgeInsets.only(top: 4.0),
+                      child: Text(
+                        'Due ${DateFormat('MMM d, h:mm a').format(task.dueDate!)}',
+                        style: GoogleFonts.inter(
+                          fontSize: 13,
+                          color: Colors.grey[600],
+                        ),
+                      ),
+                    ),
+                ],
               ),
-              IconButton(
-                icon: const Icon(Icons.delete_outline, color: Colors.redAccent, size: 20),
-                onPressed: () {
-                  // Confirmer avant de supprimer
-                  showDialog(
-                    context: context,
-                    builder: (BuildContext context) {
-                      return AlertDialog(
-                        title: Text('Delete Task', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-                        content: Text('Are you sure you want to delete "${task.title}"?'),
-                        actions: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text('Cancel', style: TextStyle(color: Colors.grey)),
-                          ),
-                          TextButton(
-                            onPressed: () {
-                              context.read<TaskBloc>().add(DeleteTaskEvent(task.id));
-                              Navigator.pop(context);
-                            },
-                            child: const Text('Delete', style: TextStyle(color: Colors.red)),
-                          ),
-                        ],
+            ),
+            if (!isSelectionMode)
+              Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  IconButton(
+                    icon: const Icon(Icons.edit_outlined, color: Colors.grey, size: 20),
+                    onPressed: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (_) => AddEditTaskScreen(task: task)),
                       );
                     },
-                  );
-                },
+                  ),
+                ],
               ),
-            ],
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
