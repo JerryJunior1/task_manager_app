@@ -16,7 +16,7 @@ class SupabaseTaskRepository implements TaskRepository {
         .from('tasks')
         .select()
         .eq('user_id', userId)
-        .order('created_at');
+        .order('created_at', ascending: false);
 
     return (response as List<dynamic>).map((json) => _taskFromJson(json)).toList();
   }

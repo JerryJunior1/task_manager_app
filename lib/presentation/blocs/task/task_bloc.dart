@@ -81,7 +81,7 @@ class TaskBloc extends Bloc<TaskEvent, TaskState> {
         emit(TaskLoading());
         try {
           final newTask = await taskRepository.addTask(event.task);
-          currentTasks.add(newTask);
+          currentTasks.insert(0, newTask);
           NotificationService().scheduleTaskReminder(newTask);
           emit(TaskLoaded(currentTasks));
         } catch (e) {
