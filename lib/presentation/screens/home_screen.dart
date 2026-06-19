@@ -406,12 +406,12 @@ class TaskCard extends StatelessWidget {
         margin: const EdgeInsets.only(bottom: 16),
         padding: const EdgeInsets.all(20),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF5D46D1).withOpacity(0.1) : Colors.white,
+          color: isSelected ? const Color(0xFF5D46D1).withValues(alpha: 0.1) : Colors.white,
           borderRadius: BorderRadius.circular(20),
           border: isSelected ? Border.all(color: const Color(0xFF5D46D1), width: 2) : Border.all(color: Colors.transparent, width: 2),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.02),
+              color: Colors.black.withValues(alpha: 0.02),
               blurRadius: 10,
               offset: const Offset(0, 4),
             ),

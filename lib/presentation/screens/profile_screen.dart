@@ -107,7 +107,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const SizedBox(height: 16),
             CircleAvatar(
               radius: 50,
-              backgroundColor: const Color(0xFF5D46D1).withOpacity(0.1),
+              backgroundColor: const Color(0xFF5D46D1).withValues(alpha: 0.1),
               child: Text(
                 _userName.isNotEmpty ? _userName[0].toUpperCase() : '?',
                 style: GoogleFonts.inter(

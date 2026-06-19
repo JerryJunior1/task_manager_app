@@ -21,6 +21,7 @@ void main() async {
 
   final notificationService = NotificationService();
   await notificationService.init();
+  await notificationService.requestPermissions();
 
   runApp(const MyApp());
 }

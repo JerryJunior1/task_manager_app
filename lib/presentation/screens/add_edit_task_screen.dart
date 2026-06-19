@@ -34,6 +34,35 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
     super.dispose();
   }
 
+  Future<void> _pickDueDate() async {
+    final date = await showDatePicker(
+      context: context,
+      initialDate: _dueDate ?? DateTime.now(),
+      firstDate: DateTime.now(),
+      lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
+    );
+    if (date == null) return;
+    if (!mounted) return;
+    await _pickTime(date);
+  }
+
+  Future<void> _pickTime(DateTime date) async {
+    final time = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(_dueDate ?? DateTime.now()),
+    );
+    if (time == null) return;
+    setState(() {
+      _dueDate = DateTime(
+        date.year,
+        date.month,
+        date.day,
+        time.hour,
+        time.minute,
+      );
+    });
+  }
+
   void _saveTask() {
     final title = _titleController.text.trim();
     if (title.isEmpty) return;
@@ -128,32 +157,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
             ),
             const SizedBox(height: 8),
             GestureDetector(
-              onTap: () async {
-                final date = await showDatePicker(
-                  context: context,
-                  initialDate: _dueDate ?? DateTime.now(),
-                  firstDate: DateTime.now(),
-                  lastDate: DateTime.now().add(const Duration(days: 365 * 5)),
-                );
-                if (date != null) {
-                  if (!mounted) return;
-                  final time = await showTimePicker(
-                    context: context,
-                    initialTime: TimeOfDay.fromDateTime(_dueDate ?? DateTime.now()),
-                  );
-                  if (time != null) {
-                    setState(() {
-                      _dueDate = DateTime(
-                        date.year,
-                        date.month,
-                        date.day,
-                        time.hour,
-                        time.minute,
-                      );
-                    });
-                  }
-                }
-              },
+              onTap: _pickDueDate,
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                 decoration: BoxDecoration(
