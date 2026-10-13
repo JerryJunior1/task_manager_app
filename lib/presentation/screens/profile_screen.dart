@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:supabase_flutter/supabase_flutter.dart';
 import '../blocs/auth/auth_bloc.dart';
 import '../blocs/task/task_bloc.dart';
+import 'package:supabase_flutter/supabase_flutter.dart';
 
 class ProfileScreen extends StatefulWidget {
   const ProfileScreen({super.key});
@@ -13,189 +13,133 @@ class ProfileScreen extends StatefulWidget {
 }
 
 class _ProfileScreenState extends State<ProfileScreen> {
-  late String _userName;
-  late String _userEmail;
+  String _userName = '';
+  String _email = '';
 
   @override
   void initState() {
     super.initState();
-    _loadUserData();
+    _loadUserProfile();
   }
 
-  void _loadUserData() {
+  Future<void> _loadUserProfile() async {
     final user = Supabase.instance.client.auth.currentUser;
-    _userEmail = user?.email ?? 'Unknown User';
-    _userName = user?.userMetadata?['full_name'] ?? _userEmail.split('@').first;
-  }
-
-  Future<void> _editProfile() async {
-    final controller = TextEditingController(text: _userName);
-    final newName = await showDialog<String>(
-      context: context,
-      builder: (context) {
-        return AlertDialog(
-          backgroundColor: Colors.white,
-          title: Text('Edit Profile', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-          content: TextField(
-            controller: controller,
-            decoration: const InputDecoration(
-              labelText: 'Full Name',
-            ),
-          ),
-          actions: [
-            TextButton(
-              onPressed: () => Navigator.pop(context),
-              child: Text('Cancel', style: GoogleFonts.inter(color: Colors.grey)),
-            ),
-            ElevatedButton(
-              onPressed: () => Navigator.pop(context, controller.text.trim()),
-              style: ElevatedButton.styleFrom(
-                minimumSize: const Size(80, 40),
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-              ),
-              child: const Text('Save'),
-            ),
-          ],
-        );
-      },
-    );
-
-    if (newName != null && newName.isNotEmpty && newName != _userName) {
-      try {
-        await Supabase.instance.client.auth.updateUser(
-          UserAttributes(data: {'full_name': newName}),
-        );
-        setState(() {
-          _userName = newName;
-        });
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(content: Text('Profile updated successfully!')),
-          );
-        }
-      } catch (e) {
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(content: Text('Failed to update profile: $e')),
-          );
-        }
-      }
+    if (user != null) {
+      setState(() {
+        _email = user.email ?? '';
+        _userName = user.userMetadata?['name'] ?? _email.split('@').first;
+      });
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: Colors.white,
       appBar: AppBar(
-        backgroundColor: Colors.transparent,
+        backgroundColor: Colors.white,
         elevation: 0,
         centerTitle: true,
         title: Text(
-          'TaskFlow',
-          style: GoogleFonts.inter(
-            color: const Color(0xFF5D46D1),
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
+          'Profile',
+          style: GoogleFonts.urbanist(
+            color: const Color(0xFF212121),
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(24.0),
-        child: Column(
-          children: [
-            const SizedBox(height: 16),
-            CircleAvatar(
-              radius: 50,
-              backgroundColor: const Color(0xFF5D46D1).withValues(alpha: 0.1),
-              child: Text(
-                _userName.isNotEmpty ? _userName[0].toUpperCase() : '?',
-                style: GoogleFonts.inter(
-                  fontSize: 40,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF5D46D1),
+      body: BlocBuilder<TaskBloc, TaskState>(
+        builder: (context, state) {
+          int completedTasks = 0;
+          int pendingTasks = 0;
+          
+          if (state is TaskLoaded) {
+            completedTasks = state.tasks.where((t) => t.isDone).length;
+            pendingTasks = state.tasks.where((t) => !t.isDone).length;
+          }
+
+          return SingleChildScrollView(
+            padding: const EdgeInsets.all(24.0),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                CircleAvatar(
+                  radius: 50,
+                  backgroundColor: const Color(0xFF246BFD).withValues(alpha: 0.1),
+                  child: Text(
+                    _userName.isNotEmpty ? _userName[0].toUpperCase() : '?',
+                    style: GoogleFonts.urbanist(
+                      fontSize: 40,
+                      fontWeight: FontWeight.bold,
+                      color: const Color(0xFF246BFD),
+                    ),
+                  ),
                 ),
-              ),
-            ),
-            const SizedBox(height: 16),
-            Text(
-              _userName,
-              style: GoogleFonts.inter(
-                fontSize: 24,
-                fontWeight: FontWeight.w800,
-                color: const Color(0xFF1A1A1A),
-              ),
-            ),
-            const SizedBox(height: 4),
-            Text(
-              _userEmail,
-              style: GoogleFonts.inter(
-                fontSize: 15,
-                color: Colors.grey[600],
-              ),
-            ),
-            const SizedBox(height: 32),
-            BlocBuilder<TaskBloc, TaskState>(
-              builder: (context, state) {
-                int completed = 0;
-                int pending = 0;
-
-                if (state is TaskLoaded) {
-                  completed = state.tasks.where((t) => t.isDone).length;
-                  pending = state.tasks.where((t) => !t.isDone).length;
-                }
-
-                return Row(
+                const SizedBox(height: 16),
+                Text(
+                  _userName,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF212121),
+                  ),
+                ),
+                const SizedBox(height: 4),
+                Text(
+                  _email,
+                  style: GoogleFonts.urbanist(
+                    fontSize: 14,
+                    color: const Color(0xFF9E9E9E),
+                  ),
+                ),
+                const SizedBox(height: 32),
+                Row(
                   children: [
                     Expanded(
                       child: _StatCard(
-                        value: completed.toString(),
-                        label: 'Tasks Completed',
+                        title: 'Completed',
+                        value: '$completedTasks',
                         icon: Icons.task_alt,
                       ),
                     ),
                     const SizedBox(width: 16),
                     Expanded(
                       child: _StatCard(
-                        value: pending.toString(),
-                        label: 'Pending Tasks',
-                        icon: Icons.pending_actions_outlined,
+                        title: 'Pending',
+                        value: '$pendingTasks',
+                        icon: Icons.pending_actions,
                       ),
                     ),
                   ],
-                );
-              },
+                ),
+                const SizedBox(height: 32),
+                _SettingsTile(icon: Icons.person_outline, title: 'Edit Profile'),
+                _SettingsTile(icon: Icons.notifications_none_outlined, title: 'Notifications'),
+                _SettingsTile(icon: Icons.lock_outline, title: 'Privacy & Security'),
+                const SizedBox(height: 32),
+                ElevatedButton(
+                  onPressed: () {
+                    context.read<AuthBloc>().add(SignOutRequested());
+                    Navigator.of(context).popUntil((route) => route.isFirst);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFFF75555),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: const [
+                      Icon(Icons.logout, size: 20),
+                      SizedBox(width: 8),
+                      Text('Sign Out'),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 24),
+              ],
             ),
-            const SizedBox(height: 32),
-            _SettingsTile(
-              icon: Icons.person_outline,
-              title: 'Account Settings',
-              onTap: _editProfile,
-            ),
-            _SettingsTile(icon: Icons.notifications_none_outlined, title: 'Notifications'),
-            _SettingsTile(icon: Icons.lock_outline, title: 'Privacy & Security'),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: () {
-                context.read<AuthBloc>().add(SignOutRequested());
-                Navigator.of(context).popUntil((route) => route.isFirst);
-              },
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFFFF5252),
-                minimumSize: const Size(double.infinity, 56),
-              ),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: const [
-                  Icon(Icons.logout, size: 20),
-                  SizedBox(width: 8),
-                  Text('Sign Out'),
-                ],
-              ),
-            ),
-            const SizedBox(height: 24),
-          ],
-        ),
+          );
+        },
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: 1,
@@ -204,12 +148,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
             Navigator.pop(context);
           }
         },
-        selectedItemColor: const Color(0xFF5D46D1),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: const Color(0xFF246BFD),
+        unselectedItemColor: const Color(0xFF9E9E9E),
+        backgroundColor: Colors.white,
+        elevation: 8,
         showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.task_outlined), label: 'Tasks'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -217,40 +164,44 @@ class _ProfileScreenState extends State<ProfileScreen> {
 }
 
 class _StatCard extends StatelessWidget {
+  final String title;
   final String value;
-  final String label;
   final IconData icon;
 
-  const _StatCard({required this.value, required this.label, required this.icon});
+  const _StatCard({
+    required this.title,
+    required this.value,
+    required this.icon,
+  });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: const Color(0xFFFAFAFA),
         borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
       ),
       child: Column(
         children: [
-          Icon(icon, color: const Color(0xFF5D46D1), size: 24),
+          Icon(icon, color: const Color(0xFF246BFD), size: 28),
           const SizedBox(height: 12),
           Text(
             value,
-            style: GoogleFonts.inter(
-              fontSize: 20,
-              fontWeight: FontWeight.w800,
-              color: const Color(0xFF1A1A1A),
+            style: GoogleFonts.urbanist(
+              fontSize: 24,
+              fontWeight: FontWeight.bold,
+              color: const Color(0xFF212121),
             ),
           ),
           const SizedBox(height: 4),
           Text(
-            label,
-            textAlign: TextAlign.center,
-            style: GoogleFonts.inter(
+            title,
+            style: GoogleFonts.urbanist(
               fontSize: 12,
-              color: Colors.grey[600],
-              fontWeight: FontWeight.w500,
+              color: const Color(0xFF9E9E9E),
+              fontWeight: FontWeight.w600,
             ),
           ),
         ],
@@ -262,29 +213,39 @@ class _StatCard extends StatelessWidget {
 class _SettingsTile extends StatelessWidget {
   final IconData icon;
   final String title;
-  final VoidCallback? onTap;
 
-  const _SettingsTile({required this.icon, required this.title, this.onTap});
+  const _SettingsTile({
+    required this.icon,
+    required this.title,
+  });
 
   @override
   Widget build(BuildContext context) {
-    return Container(
-      margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-      ),
-      child: ListTile(
-        leading: Icon(icon, color: Colors.black87),
-        title: Text(
-          title,
-          style: GoogleFonts.inter(
-            fontSize: 15,
-            fontWeight: FontWeight.w600,
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 16),
+      child: Row(
+        children: [
+          Container(
+            padding: const EdgeInsets.all(10),
+            decoration: BoxDecoration(
+              color: const Color(0xFF246BFD).withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            child: Icon(icon, color: const Color(0xFF246BFD), size: 20),
           ),
-        ),
-        trailing: const Icon(Icons.chevron_right, color: Colors.grey),
-        onTap: onTap ?? () {},
+          const SizedBox(width: 16),
+          Expanded(
+            child: Text(
+              title,
+              style: GoogleFonts.urbanist(
+                fontSize: 16,
+                fontWeight: FontWeight.w600,
+                color: const Color(0xFF212121),
+              ),
+            ),
+          ),
+          const Icon(Icons.arrow_forward_ios, size: 16, color: Color(0xFF9E9E9E)),
+        ],
       ),
     );
   }

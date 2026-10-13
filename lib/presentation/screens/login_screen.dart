@@ -28,6 +28,14 @@ class _LoginScreenState extends State<LoginScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.white,
+      appBar: AppBar(
+        backgroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back, color: Colors.black),
+          onPressed: () => Navigator.pop(context),
+        ),
+      ),
       body: BlocListener<AuthBloc, AuthState>(
         listener: (context, state) {
           if (state is AuthError) {
@@ -41,109 +49,69 @@ class _LoginScreenState extends State<LoginScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    // Logo
-                    Container(
-                      width: 80,
-                      height: 80,
-                      decoration: BoxDecoration(
-                        color: const Color(0xFFF1F0FF),
-                        shape: BoxShape.circle,
-                      ),
-                      child: const Icon(
-                        Icons.check_circle_outline,
-                        color: Color(0xFF5D46D1),
-                        size: 40,
-                      ),
-                    ),
-                    const SizedBox(height: 24),
                     Text(
-                      'TaskFlow',
-                      style: GoogleFonts.inter(
-                        fontSize: 32,
-                        fontWeight: FontWeight.w800,
-                        color: const Color(0xFF1A1A1A),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Sign in to manage your tasks',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        color: Colors.grey[600],
+                      'Login to your\nAccount',
+                      style: GoogleFonts.urbanist(
+                        fontSize: 40,
+                        fontWeight: FontWeight.bold,
+                        color: const Color(0xFF212121),
+                        height: 1.2,
                       ),
                     ),
                     const SizedBox(height: 48),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    TextField(
+                      controller: _emailController,
+                      decoration: const InputDecoration(
+                        hintText: 'Email',
+                        prefixIcon: Icon(Icons.email_outlined, color: Color(0xFF9E9E9E)),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
+                    TextField(
+                      controller: _passwordController,
+                      decoration: InputDecoration(
+                        hintText: 'Password',
+                        prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF9E9E9E)),
+                        suffixIcon: IconButton(
+                          icon: Icon(
+                            _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                            size: 20,
+                            color: const Color(0xFF9E9E9E),
+                          ),
+                          onPressed: () {
+                            setState(() {
+                              _obscurePassword = !_obscurePassword;
+                            });
+                          },
+                        ),
+                      ),
+                      obscureText: _obscurePassword,
+                    ),
+                    const SizedBox(height: 24),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
                       children: [
+                        Checkbox(
+                          value: true, 
+                          onChanged: (v) {},
+                          activeColor: const Color(0xFF246BFD),
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
+                        ),
                         Text(
-                          'Email Address',
-                          style: GoogleFonts.inter(
+                          'Remember me',
+                          style: GoogleFonts.urbanist(
+                            color: const Color(0xFF212121),
                             fontWeight: FontWeight.w600,
-                            fontSize: 14,
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        TextField(
-                          controller: _emailController,
-                          decoration: const InputDecoration(
-                            hintText: 'name@example.com',
                           ),
                         ),
                       ],
                     ),
-                    const SizedBox(height: 20),
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Password',
-                              style: GoogleFonts.inter(
-                                fontWeight: FontWeight.w600,
-                                fontSize: 14,
-                              ),
-                            ),
-                            TextButton(
-                              onPressed: () {},
-                              child: Text(
-                                'Forgot password?',
-                                style: GoogleFonts.inter(
-                                  color: const Color(0xFF5D46D1),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                        TextField(
-                          controller: _passwordController,
-                          decoration: InputDecoration(
-                            hintText: '••••••••',
-                            suffixIcon: IconButton(
-                              icon: Icon(
-                                _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                size: 20,
-                              ),
-                              onPressed: () {
-                                setState(() {
-                                  _obscurePassword = !_obscurePassword;
-                                });
-                              },
-                            ),
-                          ),
-                          obscureText: _obscurePassword,
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 24),
                     BlocBuilder<AuthBloc, AuthState>(
                       builder: (context, state) {
                         return ElevatedButton(
@@ -158,16 +126,23 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                           child: state is AuthLoading
                               ? const CircularProgressIndicator(color: Colors.white)
-                              : Row(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: const [
-                                    Text('Sign In'),
-                                    SizedBox(width: 8),
-                                    Icon(Icons.arrow_forward, size: 18),
-                                  ],
-                                ),
+                              : Text('Sign in', style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold)),
                         );
                       },
+                    ),
+                    const SizedBox(height: 24),
+                    Center(
+                      child: TextButton(
+                        onPressed: () {},
+                        child: Text(
+                          'Forgot the password?',
+                          style: GoogleFonts.urbanist(
+                            color: const Color(0xFF246BFD),
+                            fontWeight: FontWeight.w600,
+                            fontSize: 16,
+                          ),
+                        ),
+                      ),
                     ),
                     const SizedBox(height: 32),
                     Row(
@@ -175,7 +150,7 @@ class _LoginScreenState extends State<LoginScreen> {
                       children: [
                         Text(
                           "Don't have an account? ",
-                          style: GoogleFonts.inter(color: Colors.grey[600]),
+                          style: GoogleFonts.urbanist(color: const Color(0xFF9E9E9E)),
                         ),
                         GestureDetector(
                           onTap: () {
@@ -185,9 +160,9 @@ class _LoginScreenState extends State<LoginScreen> {
                             );
                           },
                           child: Text(
-                            'Create Account',
-                            style: GoogleFonts.inter(
-                              color: const Color(0xFF5D46D1),
+                            'Sign up',
+                            style: GoogleFonts.urbanist(
+                              color: const Color(0xFF246BFD),
                               fontWeight: FontWeight.bold,
                             ),
                           ),

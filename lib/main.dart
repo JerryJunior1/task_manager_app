@@ -50,30 +50,41 @@ class MyApp extends StatelessWidget {
         theme: ThemeData(
           useMaterial3: true,
           colorScheme: ColorScheme.fromSeed(
-            seedColor: const Color(0xFF5D46D1),
-            primary: const Color(0xFF5D46D1),
-            surface: const Color(0xFFF8F9FE),
+            seedColor: const Color(0xFF246BFD),
+            primary: const Color(0xFF246BFD),
+            secondary: const Color(0xFF246BFD),
+            surface: Colors.white,
           ),
-          textTheme: GoogleFonts.interTextTheme(),
+          scaffoldBackgroundColor: Colors.white,
+          textTheme: GoogleFonts.urbanistTextTheme(),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF5D46D1),
+              backgroundColor: const Color(0xFF246BFD),
               foregroundColor: Colors.white,
               minimumSize: const Size(double.infinity, 56),
               shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(16),
+                borderRadius: BorderRadius.circular(100),
               ),
               elevation: 0,
             ),
           ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
-            fillColor: const Color(0xFFF1F0FF),
+            fillColor: const Color(0xFFFAFAFA),
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: BorderSide.none,
+              borderSide: const BorderSide(color: Color(0xFFEEEEEE), width: 1),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFFEEEEEE), width: 1),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(16),
+              borderSide: const BorderSide(color: Color(0xFF246BFD), width: 1),
             ),
             contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
           ),
         ),
         builder: (context, child) {

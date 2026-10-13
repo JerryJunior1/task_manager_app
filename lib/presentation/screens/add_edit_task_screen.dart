@@ -98,22 +98,22 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
         backgroundColor: Colors.white,
         elevation: 0,
         leading: IconButton(
-          icon: const Icon(Icons.close, color: Colors.black),
+          icon: const Icon(Icons.close, color: Colors.black87),
           onPressed: () => Navigator.pop(context),
         ),
         centerTitle: true,
         title: Text(
           isEditing ? 'Edit Task' : 'New Task',
-          style: GoogleFonts.inter(
-            color: Colors.black,
-            fontWeight: FontWeight.w800,
-            fontSize: 18,
+          style: GoogleFonts.urbanist(
+            color: const Color(0xFF212121),
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
           ),
         ),
         actions: [
           if (isEditing)
             IconButton(
-              icon: const Icon(Icons.delete_outline, color: Colors.red),
+              icon: const Icon(Icons.delete_outline, color: Color(0xFFF75555)),
               onPressed: () {
                 context.read<TaskBloc>().add(DeleteTaskEvent(widget.task!.id));
                 Navigator.pop(context);
@@ -128,7 +128,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
           children: [
             Text(
               'Task Title',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+              style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF212121)),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -140,7 +140,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
             const SizedBox(height: 24),
             Text(
               'Description',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+              style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF212121)),
             ),
             const SizedBox(height: 8),
             TextField(
@@ -153,7 +153,7 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
             const SizedBox(height: 24),
             Text(
               'Due Date',
-              style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+              style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF212121)),
             ),
             const SizedBox(height: 8),
             GestureDetector(
@@ -161,8 +161,9 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
               child: Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
                 decoration: BoxDecoration(
-                  color: const Color(0xFFF1F0FF),
+                  color: const Color(0xFFFAFAFA),
                   borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: const Color(0xFFEEEEEE), width: 1),
                 ),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -171,12 +172,12 @@ class _AddEditTaskScreenState extends State<AddEditTaskScreen> {
                       _dueDate != null
                           ? DateFormat('MMM d, yyyy - HH:mm').format(_dueDate!)
                           : 'Select a date and time',
-                      style: GoogleFonts.inter(
-                        color: _dueDate != null ? Colors.black : Colors.grey[500],
+                      style: GoogleFonts.urbanist(
+                        color: _dueDate != null ? const Color(0xFF212121) : const Color(0xFF9E9E9E),
                         fontSize: 16,
                       ),
                     ),
-                    const Icon(Icons.calendar_today_outlined, size: 20, color: Colors.black54),
+                    const Icon(Icons.calendar_today_outlined, size: 20, color: Color(0xFF9E9E9E)),
                   ],
                 ),
               ),

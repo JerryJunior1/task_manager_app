@@ -72,14 +72,14 @@ class _HomeScreenState extends State<HomeScreen> {
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Rappel !', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 16)),
-                  Text('${task.title} est prévue dans 10 min.', style: GoogleFonts.inter(fontSize: 14)),
+                  Text('Rappel !', style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16)),
+                  Text('${task.title} est prévue dans 10 min.', style: GoogleFonts.urbanist(fontSize: 14)),
                 ],
               ),
             ),
           ],
         ),
-        backgroundColor: const Color(0xFF5D46D1),
+        backgroundColor: const Color(0xFF246BFD),
         duration: const Duration(seconds: 10),
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
@@ -105,10 +105,10 @@ class _HomeScreenState extends State<HomeScreen> {
     final isSelectionMode = _selectedTaskIds.isNotEmpty;
 
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FE),
+      backgroundColor: Colors.white,
       appBar: isSelectionMode
           ? AppBar(
-              backgroundColor: const Color(0xFF5D46D1),
+              backgroundColor: const Color(0xFF246BFD),
               elevation: 0,
               leading: IconButton(
                 icon: const Icon(Icons.close, color: Colors.white),
@@ -116,7 +116,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               title: Text(
                 '${_selectedTaskIds.length} sélectionnés',
-                style: GoogleFonts.inter(color: Colors.white, fontWeight: FontWeight.bold),
+                style: GoogleFonts.urbanist(color: Colors.white, fontWeight: FontWeight.bold),
               ),
               actions: [
                 IconButton(
@@ -126,19 +126,21 @@ class _HomeScreenState extends State<HomeScreen> {
                       context: context,
                       builder: (BuildContext context) {
                         return AlertDialog(
-                          title: Text('Supprimer', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-                          content: Text('Voulez-vous vraiment supprimer ces ${_selectedTaskIds.length} tâches ?'),
+                          backgroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                          title: Text('Supprimer', style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, color: const Color(0xFF212121))),
+                          content: Text('Voulez-vous vraiment supprimer ces ${_selectedTaskIds.length} tâches ?', style: GoogleFonts.urbanist(color: const Color(0xFF212121))),
                           actions: [
                             TextButton(
                               onPressed: () => Navigator.pop(context),
-                              child: const Text('Annuler', style: TextStyle(color: Colors.grey)),
+                              child: Text('Annuler', style: GoogleFonts.urbanist(color: const Color(0xFF9E9E9E), fontWeight: FontWeight.bold)),
                             ),
                             TextButton(
                               onPressed: () {
                                 _deleteSelectedTasks();
                                 Navigator.pop(context);
                               },
-                              child: const Text('Supprimer', style: TextStyle(color: Colors.red)),
+                              child: Text('Supprimer', style: GoogleFonts.urbanist(color: const Color(0xFFF75555), fontWeight: FontWeight.bold)),
                             ),
                           ],
                         );
@@ -149,27 +151,37 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             )
           : AppBar(
-              backgroundColor: Colors.transparent,
+              backgroundColor: Colors.white,
               elevation: 0,
-              centerTitle: true,
-              title: Text(
-                'TaskFlow',
-                style: GoogleFonts.inter(
-                  color: const Color(0xFF5D46D1),
-                  fontWeight: FontWeight.w800,
-                  fontSize: 18,
-                ),
+              centerTitle: false,
+              title: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Aura Tasks',
+                    style: GoogleFonts.urbanist(
+                      color: const Color(0xFF212121),
+                      fontWeight: FontWeight.bold,
+                      fontSize: 24,
+                    ),
+                  ),
+                  Text(
+                    DateFormat('EEEE, MMM d').format(DateTime.now()),
+                    style: GoogleFonts.urbanist(
+                      color: const Color(0xFF9E9E9E),
+                      fontSize: 14,
+                      fontWeight: FontWeight.w600,
+                    ),
+                  ),
+                ],
               ),
               actions: [
                 IconButton(
-                  icon: const Icon(Icons.notifications_outlined, color: Color(0xFF5D46D1)),
+                  icon: const Icon(Icons.settings_outlined, color: Color(0xFF246BFD)),
                   onPressed: () {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text('Aucune nouvelle alerte', style: GoogleFonts.inter()),
-                        behavior: SnackBarBehavior.floating,
-                        backgroundColor: Colors.black87,
-                      ),
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => const ProfileScreen()),
                     );
                   },
                 ),
@@ -185,23 +197,18 @@ class _HomeScreenState extends State<HomeScreen> {
               children: [
                 const SizedBox(height: 16),
                 Text(
-                  'Hello, $firstName!',
-                  style: GoogleFonts.inter(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: const Color(0xFF1A1A1A),
+                  'Daily Progress',
+                  style: GoogleFonts.urbanist(
+                    fontSize: 20,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFF212121),
                   ),
                 ),
-                const SizedBox(height: 4),
-                Text(
-                  state is TaskLoaded
-                      ? 'You have ${state.tasks.where((t) => !t.isDone).length} tasks to focus on today'
-                      : 'Loading your tasks...',
-                  style: GoogleFonts.inter(
-                    fontSize: 15,
-                    color: Colors.grey[600],
-                  ),
-                ),
+                const SizedBox(height: 16),
+                if (state is TaskLoaded)
+                  _DailyProgressCard(tasks: state.tasks)
+                else
+                  const Center(child: CircularProgressIndicator(color: Color(0xFF246BFD))),
                 const SizedBox(height: 24),
                 Row(
                   children: [
@@ -227,7 +234,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(height: 24),
                 Expanded(
                   child: state is TaskLoading
-                      ? const Center(child: CircularProgressIndicator())
+                      ? const Center(child: CircularProgressIndicator(color: Color(0xFF246BFD)))
                       : state is TaskLoaded
                           ? Builder(
                               builder: (context) {
@@ -241,7 +248,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   return Center(
                                     child: Text(
                                       'No $_filter tasks',
-                                      style: GoogleFonts.inter(color: Colors.grey),
+                                      style: GoogleFonts.urbanist(color: const Color(0xFF9E9E9E), fontSize: 16),
                                     ),
                                   );
                                 }
@@ -283,9 +290,10 @@ class _HomeScreenState extends State<HomeScreen> {
             MaterialPageRoute(builder: (_) => const AddEditTaskScreen()),
           );
         },
-        backgroundColor: const Color(0xFF5D46D1),
+        backgroundColor: const Color(0xFF246BFD),
+        elevation: 4,
         shape: const CircleBorder(),
-        child: const Icon(Icons.add, color: Colors.white),
+        child: const Icon(Icons.add, color: Colors.white, size: 28),
       ),
       bottomNavigationBar: BottomNavigationBar(
         currentIndex: _selectedIndex,
@@ -301,12 +309,15 @@ class _HomeScreenState extends State<HomeScreen> {
             });
           }
         },
-        selectedItemColor: const Color(0xFF5D46D1),
-        unselectedItemColor: Colors.grey,
+        selectedItemColor: const Color(0xFF246BFD),
+        unselectedItemColor: const Color(0xFF9E9E9E),
+        backgroundColor: Colors.white,
+        elevation: 8,
         showUnselectedLabels: true,
+        type: BottomNavigationBarType.fixed,
         items: const [
-          BottomNavigationBarItem(icon: Icon(Icons.task_outlined), label: 'Tasks'),
-          BottomNavigationBarItem(icon: Icon(Icons.person_outline), label: 'Profile'),
+          BottomNavigationBarItem(icon: Icon(Icons.home_filled), label: 'Home'),
+          BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Profile'),
         ],
       ),
     );
@@ -327,16 +338,16 @@ class _FilterChip extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF5D46D1) : Colors.white,
-          borderRadius: BorderRadius.circular(20),
-          border: isSelected ? null : Border.all(color: Colors.grey.shade300),
+          color: isSelected ? const Color(0xFF246BFD) : Colors.white,
+          borderRadius: BorderRadius.circular(100),
+          border: Border.all(color: isSelected ? const Color(0xFF246BFD) : const Color(0xFFEEEEEE)),
         ),
         child: Text(
           label,
-          style: GoogleFonts.inter(
-            color: isSelected ? Colors.white : Colors.grey[600],
-            fontWeight: FontWeight.w600,
-            fontSize: 14,
+          style: GoogleFonts.urbanist(
+            color: isSelected ? Colors.white : const Color(0xFF9E9E9E),
+            fontWeight: FontWeight.bold,
+            fontSize: 16,
           ),
         ),
       ),
@@ -370,32 +381,57 @@ class TaskCard extends StatelessWidget {
             context: context,
             builder: (_) => AlertDialog(
               backgroundColor: Colors.white,
-              title: Text(task.title, style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+              title: Text(task.title, style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 24, color: const Color(0xFF212121))),
               content: Column(
                 mainAxisSize: MainAxisSize.min,
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   if (task.description != null && task.description!.isNotEmpty) ...[
-                    Text('Description', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text('Description', style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF9E9E9E))),
                     const SizedBox(height: 4),
-                    Text(task.description!, style: GoogleFonts.inter(color: Colors.grey[700])),
+                    Text(task.description!, style: GoogleFonts.urbanist(color: const Color(0xFF212121), fontSize: 16)),
                     const SizedBox(height: 16),
                   ],
                   if (task.dueDate != null) ...[
-                    Text('Due Date', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                    Text('Due Date', style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF9E9E9E))),
                     const SizedBox(height: 4),
-                    Text(DateFormat('MMM d, yyyy - h:mm a').format(task.dueDate!), style: GoogleFonts.inter(color: Colors.grey[700])),
+                    Text(DateFormat('MMM d, yyyy - h:mm a').format(task.dueDate!), style: GoogleFonts.urbanist(color: const Color(0xFF212121), fontSize: 16)),
                     const SizedBox(height: 16),
                   ],
-                  Text('Status', style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14)),
+                  Text('Status', style: GoogleFonts.urbanist(fontWeight: FontWeight.bold, fontSize: 16, color: const Color(0xFF9E9E9E))),
                   const SizedBox(height: 4),
-                  Text(task.isDone ? 'Completed' : 'Pending', style: GoogleFonts.inter(color: task.isDone ? Colors.green : Colors.orange)),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+                    decoration: BoxDecoration(
+                      color: task.isDone ? const Color(0xFF4CAF50).withValues(alpha: 0.1) : const Color(0xFFFF9800).withValues(alpha: 0.1),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      task.isDone ? 'Completed' : 'Pending', 
+                      style: GoogleFonts.urbanist(
+                        color: task.isDone ? const Color(0xFF4CAF50) : const Color(0xFFFF9800),
+                        fontWeight: FontWeight.bold,
+                        fontSize: 14,
+                      )
+                    ),
+                  ),
                 ],
               ),
               actions: [
                 TextButton(
+                  onPressed: () {
+                    Navigator.pop(context);
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(builder: (_) => AddEditTaskScreen(task: task)),
+                    );
+                  },
+                  child: Text('Edit', style: GoogleFonts.urbanist(color: const Color(0xFF9E9E9E), fontWeight: FontWeight.bold, fontSize: 16)),
+                ),
+                TextButton(
                   onPressed: () => Navigator.pop(context),
-                  child: Text('Close', style: GoogleFonts.inter(color: const Color(0xFF5D46D1))),
+                  child: Text('Close', style: GoogleFonts.urbanist(color: const Color(0xFF246BFD), fontWeight: FontWeight.bold, fontSize: 16)),
                 ),
               ],
             ),
@@ -403,19 +439,12 @@ class TaskCard extends StatelessWidget {
         }
       },
       child: Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        padding: const EdgeInsets.all(20),
+        margin: const EdgeInsets.only(bottom: 12),
+        padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF5D46D1).withValues(alpha: 0.1) : Colors.white,
+          color: const Color(0xFFFAFAFA),
           borderRadius: BorderRadius.circular(20),
-          border: isSelected ? Border.all(color: const Color(0xFF5D46D1), width: 2) : Border.all(color: Colors.transparent, width: 2),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withValues(alpha: 0.02),
-              blurRadius: 10,
-              offset: const Offset(0, 4),
-            ),
-          ],
+          border: isSelected ? Border.all(color: const Color(0xFF246BFD), width: 2) : Border.all(color: const Color(0xFFEEEEEE), width: 1),
         ),
         child: Row(
           children: [
@@ -426,9 +455,9 @@ class TaskCard extends StatelessWidget {
                 height: 24,
                 decoration: BoxDecoration(
                   shape: BoxShape.circle,
-                  color: isSelected ? const Color(0xFF5D46D1) : Colors.transparent,
+                  color: isSelected ? const Color(0xFF246BFD) : Colors.transparent,
                   border: Border.all(
-                    color: isSelected ? const Color(0xFF5D46D1) : Colors.grey.shade400,
+                    color: isSelected ? const Color(0xFF246BFD) : const Color(0xFFEEEEEE),
                     width: 2,
                   ),
                 ),
@@ -444,10 +473,10 @@ class TaskCard extends StatelessWidget {
                   width: 24,
                   height: 24,
                   decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    color: task.isDone ? const Color(0xFF4CAF50) : Colors.transparent,
+                    color: task.isDone ? const Color(0xFF246BFD) : Colors.transparent,
+                    borderRadius: BorderRadius.circular(8),
                     border: Border.all(
-                      color: task.isDone ? const Color(0xFF4CAF50) : Colors.grey.shade400,
+                      color: task.isDone ? const Color(0xFF246BFD) : const Color(0xFFEEEEEE),
                       width: 2,
                     ),
                   ),
@@ -460,45 +489,133 @@ class TaskCard extends StatelessWidget {
                 children: [
                   Text(
                     task.title,
-                    style: GoogleFonts.inter(
-                      fontWeight: FontWeight.w700,
-                      fontSize: 16,
+                    style: GoogleFonts.urbanist(
+                      fontWeight: FontWeight.bold,
+                      fontSize: 18,
                       decoration: task.isDone ? TextDecoration.lineThrough : null,
-                      color: task.isDone ? Colors.grey : const Color(0xFF1A1A1A),
+                      color: task.isDone ? const Color(0xFF9E9E9E) : const Color(0xFF212121),
                     ),
                   ),
                   if (task.dueDate != null)
                     Padding(
-                      padding: const EdgeInsets.only(top: 4.0),
-                      child: Text(
-                        'Due ${DateFormat('MMM d, h:mm a').format(task.dueDate!)}',
-                        style: GoogleFonts.inter(
-                          fontSize: 13,
-                          color: Colors.grey[600],
-                        ),
+                      padding: const EdgeInsets.only(top: 6.0),
+                      child: Row(
+                        children: [
+                          Icon(Icons.access_time, size: 14, color: const Color(0xFF9E9E9E)),
+                          const SizedBox(width: 4),
+                          Text(
+                            DateFormat('MMM d, HH:mm').format(task.dueDate!),
+                            style: GoogleFonts.urbanist(
+                              fontSize: 13,
+                              color: const Color(0xFF9E9E9E),
+                              fontWeight: FontWeight.w600,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                 ],
               ),
             ),
-            if (!isSelectionMode)
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  IconButton(
-                    icon: const Icon(Icons.edit_outlined, color: Colors.grey, size: 20),
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(builder: (_) => AddEditTaskScreen(task: task)),
-                      );
-                    },
-                  ),
-                ],
-              ),
           ],
         ),
       ),
+    );
+  }
+}
+
+class _DailyProgressCard extends StatelessWidget {
+  final List<Task> tasks;
+  const _DailyProgressCard({required this.tasks});
+
+  @override
+  Widget build(BuildContext context) {
+    final todayTasks = tasks; 
+    final total = todayTasks.length;
+    final done = todayTasks.where((t) => t.isDone).length;
+    final pending = total - done;
+    final progress = total > 0 ? done / total : 0.0;
+
+    return Container(
+      padding: const EdgeInsets.all(24),
+      decoration: BoxDecoration(
+        color: const Color(0xFF246BFD),
+        borderRadius: BorderRadius.circular(24),
+      ),
+      child: Row(
+        children: [
+          SizedBox(
+            width: 100,
+            height: 100,
+            child: Stack(
+              fit: StackFit.expand,
+              children: [
+                CircularProgressIndicator(
+                  value: progress,
+                  strokeWidth: 10,
+                  backgroundColor: Colors.white.withValues(alpha: 0.2),
+                  color: Colors.white,
+                  strokeCap: StrokeCap.round,
+                ),
+                Center(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        '${(progress * 100).toInt()}%',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 22,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(width: 32),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _StatRow(icon: Icons.assignment_outlined, color: Colors.white, label: 'Total: $total'),
+                const SizedBox(height: 12),
+                _StatRow(icon: Icons.check_circle_outline, color: Colors.white, label: 'Done: $done'),
+                const SizedBox(height: 12),
+                _StatRow(icon: Icons.access_time, color: Colors.white, label: 'Pending: $pending'),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StatRow extends StatelessWidget {
+  final IconData icon;
+  final Color color;
+  final String label;
+
+  const _StatRow({required this.icon, required this.color, required this.label});
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 16, color: color.withValues(alpha: 0.9)),
+        const SizedBox(width: 8),
+        Text(
+          label,
+          style: GoogleFonts.urbanist(
+            fontSize: 15,
+            fontWeight: FontWeight.bold,
+            color: color,
+          ),
+        ),
+      ],
     );
   }
 }

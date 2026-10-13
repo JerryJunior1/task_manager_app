@@ -16,7 +16,7 @@ class NotificationService {
     tz.initializeTimeZones();
     try {
       final timeZoneInfo = await FlutterTimezone.getLocalTimezone();
-      tz.setLocalLocation(tz.getLocation(timeZoneInfo.identifier));
+      tz.setLocalLocation(tz.getLocation(timeZoneInfo));
     } catch (_) {
       // Fallback if unable to get timezone
     }
@@ -37,7 +37,7 @@ class NotificationService {
     );
 
     await _notificationsPlugin.initialize(
-      initializationSettings,
+      settings: initializationSettings,
       onDidReceiveNotificationResponse: (NotificationResponse response) async {
         // Handle notification tapped
       },
@@ -105,20 +105,18 @@ class NotificationService {
     );
 
     await _notificationsPlugin.zonedSchedule(
-      id,
-      'Task Reminder: ${task.title}',
-      'This task is due in 10 minutes!',
-      tz.TZDateTime.from(reminderTime, tz.local),
-      platformDetails,
+      id: id,
+      title: 'Task Reminder: ${task.title}',
+      body: 'This task is due in 10 minutes!',
+      scheduledDate: tz.TZDateTime.from(reminderTime, tz.local),
+      notificationDetails: platformDetails,
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-      uiLocalNotificationDateInterpretation:
-          UILocalNotificationDateInterpretation.absoluteTime,
       payload: task.id,
     );
   }
 
   Future<void> cancelReminder(String taskId) async {
     final id = _hashStringToInt(taskId);
-    await _notificationsPlugin.cancel(id);
+    await _notificationsPlugin.cancel(id: id);
   }
 }

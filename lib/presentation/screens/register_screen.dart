@@ -65,127 +65,97 @@ class _RegisterScreenState extends State<RegisterScreen> {
             child: ConstrainedBox(
               constraints: const BoxConstraints(maxWidth: 400),
               child: SingleChildScrollView(
-                padding: const EdgeInsets.symmetric(horizontal: 32.0),
+                padding: const EdgeInsets.symmetric(horizontal: 24.0),
                 child: Form(
                   key: _formKey,
                   child: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
+                    crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Container(
-                        width: 60,
-                        height: 60,
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F0FF),
-                          shape: BoxShape.circle,
+                      Text(
+                        'Create your\nAccount',
+                        style: GoogleFonts.urbanist(
+                          fontSize: 40,
+                          fontWeight: FontWeight.bold,
+                          color: const Color(0xFF212121),
+                          height: 1.2,
                         ),
-                        child: const Icon(
-                          Icons.check_circle_outline,
-                          color: Color(0xFF5D46D1),
-                          size: 30,
+                      ),
+                      const SizedBox(height: 48),
+                      TextFormField(
+                        controller: _nameController,
+                        decoration: const InputDecoration(
+                          hintText: 'Full Name',
+                          prefixIcon: Icon(Icons.person_outline, color: Color(0xFF9E9E9E)),
                         ),
+                        validator: (value) {
+                          if (value == null || value.trim().isEmpty) {
+                            return 'Please enter your name';
+                          }
+                          return null;
+                        },
                       ),
                       const SizedBox(height: 24),
-                      Text(
-                        'Create an account',
-                        style: GoogleFonts.inter(
-                          fontSize: 28,
-                          fontWeight: FontWeight.w800,
+                      TextFormField(
+                        controller: _emailController,
+                        decoration: const InputDecoration(
+                          hintText: 'Email',
+                          prefixIcon: Icon(Icons.email_outlined, color: Color(0xFF9E9E9E)),
                         ),
+                        validator: (value) {
+                          if (value == null || !_isEmailValid(value.trim())) {
+                            return 'Please enter a valid email address';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Join TaskFlow to manage your productivity',
-                        textAlign: TextAlign.center,
-                        style: GoogleFonts.inter(
-                          fontSize: 15,
-                          color: Colors.grey[600],
+                      const SizedBox(height: 24),
+                      TextFormField(
+                        controller: _passwordController,
+                        decoration: InputDecoration(
+                          hintText: 'Password',
+                          prefixIcon: const Icon(Icons.lock_outline, color: Color(0xFF9E9E9E)),
+                          suffixIcon: IconButton(
+                            icon: Icon(
+                              _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
+                              size: 20,
+                              color: const Color(0xFF9E9E9E),
+                            ),
+                            onPressed: () {
+                              setState(() {
+                                _obscurePassword = !_obscurePassword;
+                              });
+                            },
+                          ),
                         ),
+                        obscureText: _obscurePassword,
+                        validator: (value) {
+                          if (value == null || !_isPasswordValid(value)) {
+                            return 'Min 8 chars, at least 1 letter and 1 number';
+                          }
+                          return null;
+                        },
                       ),
-                      const SizedBox(height: 40),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
+                      const SizedBox(height: 24),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text(
-                            'Full Name',
-                            style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
+                          Checkbox(
+                            value: true, 
+                            onChanged: (v) {},
+                            activeColor: const Color(0xFF246BFD),
+                            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(4)),
                           ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _nameController,
-                            decoration: const InputDecoration(
-                              hintText: 'John Doe',
-                              prefixIcon: Icon(Icons.person_outline, size: 20),
+                          Text(
+                            'Remember me',
+                            style: GoogleFonts.urbanist(
+                              color: const Color(0xFF212121),
+                              fontWeight: FontWeight.w600,
                             ),
-                            validator: (value) {
-                              if (value == null || value.trim().isEmpty) {
-                                return 'Please enter your name';
-                              }
-                              return null;
-                            },
                           ),
                         ],
                       ),
-                      const SizedBox(height: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Email Address',
-                            style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _emailController,
-                            decoration: const InputDecoration(
-                              hintText: 'name@example.com',
-                              prefixIcon: Icon(Icons.email_outlined, size: 20),
-                            ),
-                            validator: (value) {
-                              if (value == null || !_isEmailValid(value.trim())) {
-                                return 'Please enter a valid email address';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 20),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Password',
-                            style: GoogleFonts.inter(fontWeight: FontWeight.w600, fontSize: 14),
-                          ),
-                          const SizedBox(height: 8),
-                          TextFormField(
-                            controller: _passwordController,
-                            decoration: InputDecoration(
-                              hintText: '••••••••',
-                              prefixIcon: const Icon(Icons.lock_outline, size: 20),
-                              suffixIcon: IconButton(
-                                icon: Icon(
-                                  _obscurePassword ? Icons.visibility_off_outlined : Icons.visibility_outlined,
-                                  size: 20,
-                                ),
-                                onPressed: () {
-                                  setState(() {
-                                    _obscurePassword = !_obscurePassword;
-                                  });
-                                },
-                              ),
-                            ),
-                            obscureText: _obscurePassword,
-                            validator: (value) {
-                              if (value == null || !_isPasswordValid(value)) {
-                                return 'Min 8 chars, at least 1 letter and 1 number';
-                              }
-                              return null;
-                            },
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 32),
+                      const SizedBox(height: 24),
                       BlocBuilder<AuthBloc, AuthState>(
                         builder: (context, state) {
                           return ElevatedButton(
@@ -195,34 +165,31 @@ class _RegisterScreenState extends State<RegisterScreen> {
                                     if (_formKey.currentState!.validate()) {
                                       final email = _emailController.text.trim();
                                       final password = _passwordController.text.trim();
-                                      final name = _nameController.text.trim();
-                                      context.read<AuthBloc>().add(SignUpRequested(email, password, name: name));
+                                      context.read<AuthBloc>().add(SignUpRequested(email, password));
                                     }
                                   },
                             child: state is AuthLoading
                                 ? const CircularProgressIndicator(color: Colors.white)
-                                : Row(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: const [
-                                      Text('Register'),
-                                      SizedBox(width: 8),
-                                      Icon(Icons.arrow_forward, size: 18),
-                                    ],
-                                  ),
+                                : Text('Sign up', style: GoogleFonts.urbanist(fontSize: 16, fontWeight: FontWeight.bold)),
                           );
                         },
                       ),
-                      const SizedBox(height: 24),
+                      const SizedBox(height: 32),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Text("Already have an account? ", style: GoogleFonts.inter(color: Colors.grey[600])),
+                          Text(
+                            "Already have an account? ",
+                            style: GoogleFonts.urbanist(color: const Color(0xFF9E9E9E)),
+                          ),
                           GestureDetector(
-                            onTap: () => Navigator.pop(context),
+                            onTap: () {
+                              Navigator.pop(context);
+                            },
                             child: Text(
-                              'Log in',
-                              style: GoogleFonts.inter(
-                                color: const Color(0xFF5D46D1),
+                              'Sign in',
+                              style: GoogleFonts.urbanist(
+                                color: const Color(0xFF246BFD),
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
@@ -239,4 +206,3 @@ class _RegisterScreenState extends State<RegisterScreen> {
       ),
     );
   }
-}
