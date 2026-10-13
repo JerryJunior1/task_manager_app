@@ -45,7 +45,7 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
-        title: 'Minimalist Task Manager',
+        title: 'Task Manager',
         debugShowCheckedModeBanner: false,
         theme: ThemeData(
           useMaterial3: true,
@@ -53,10 +53,15 @@ class MyApp extends StatelessWidget {
             seedColor: const Color(0xFF246BFD),
             primary: const Color(0xFF246BFD),
             secondary: const Color(0xFF246BFD),
-            surface: Colors.white,
+            surface: const Color(0xFFFAFAFA),
           ),
-          scaffoldBackgroundColor: Colors.white,
+          scaffoldBackgroundColor: const Color(0xFFFAFAFA),
           textTheme: GoogleFonts.urbanistTextTheme(),
+          appBarTheme: const AppBarTheme(
+            backgroundColor: Color(0xFFFAFAFA),
+            elevation: 0,
+            iconTheme: IconThemeData(color: Color(0xFF212121)),
+          ),
           elevatedButtonTheme: ElevatedButtonThemeData(
             style: ElevatedButton.styleFrom(
               backgroundColor: const Color(0xFF246BFD),
@@ -70,20 +75,20 @@ class MyApp extends StatelessWidget {
           ),
           inputDecorationTheme: InputDecorationTheme(
             filled: true,
-            fillColor: const Color(0xFFFAFAFA),
+            fillColor: Colors.white,
             border: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFEEEEEE), width: 1),
+              borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
             ),
             enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
-              borderSide: const BorderSide(color: Color(0xFFEEEEEE), width: 1),
+              borderSide: BorderSide(color: Colors.grey.shade200, width: 1),
             ),
             focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(16),
               borderSide: const BorderSide(color: Color(0xFF246BFD), width: 1),
             ),
-            contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+            contentPadding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
             hintStyle: const TextStyle(color: Color(0xFF9E9E9E)),
           ),
         ),
